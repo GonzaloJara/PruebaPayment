@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="Directory.Packages.props" />
+  </Folder>
+  <Project Path="PruebaPayment.Adq/PruebaPayment.Adq.csproj" />
+  <Project Path="PruebaPayment.AppHost/PruebaPayment.AppHost.csproj" />
+  <Project Path="PruebaPayment.ServiceDefaults/PruebaPayment.ServiceDefaults.csproj" />
+  <Project Path="PruebaPayment/PruebaPayment.csproj" />
+</Solution>

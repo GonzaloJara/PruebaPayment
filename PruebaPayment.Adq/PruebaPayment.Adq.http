@@ -1,0 +1,16 @@
+@PruebaPayment.Adq_HostAddress = http://localhost:5004
+
+POST {{PruebaPayment.Adq_HostAddress}}/authorize
+Content-Type: application/json
+
+{
+  "mti": "0100",
+  "pan": "4111111111111111",
+  "processingCode": "000000",
+  "amount": 10000,
+  "transactionCurrencyCode": "152",
+  "stan": "000001",
+  "merchantId": "00000000-0000-0000-0000-000000000001"
+}
+
+###

@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Payment Request</title>
+    <style>
+        :root {
+            --accent: #4f46e5;
+            --accent-dark: #4338ca;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f3f4f6;
+            margin: 0;
+            padding: 40px 16px;
+            color: #1f2937;
+        }
+        .card {
+            max-width: 640px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            padding: 28px 32px 32px;
+        }
+        h1 {
+            font-size: 22px;
+            margin: 0 0 4px;
+        }
+        .swagger-link {
+            font-size: 13px;
+            margin: 0 0 20px;
+        }
+        .swagger-link a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        .swagger-link a:hover {
+            text-decoration: underline;
+        }
+        label {
+            display: block;
+            margin-top: 16px;
+            font-weight: 600;
+            font-size: 13px;
+            color: #374151;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+        }
+        input[readonly] {
+            background: #f9fafb;
+            color: #6b7280;
+        }
+        .row {
+            display: flex;
+            gap: 12px;
+        }
+        .row > div {
+            flex: 1;
+        }
+        fieldset {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-top: 20px;
+            padding: 12px 16px 16px;
+        }
+        legend {
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            padding: 0 4px;
+        }
+        button {
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .btn-primary {
+            width: 100%;
+            margin-top: 24px;
+            padding: 12px;
+            background: var(--accent);
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: var(--accent-dark);
+        }
+        .btn-secondary {
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: #eef2ff;
+            color: var(--accent);
+        }
+        .btn-secondary:hover {
+            background: #e0e7ff;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 12px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            white-space: pre-wrap;
+            display: none;
+        }
+        #result.show { display: block; }
+        .pending { background: #fff3cd; color: #92660b; }
+        .approved { background: #d4edda; color: #1e7e34; }
+        .declined, .failed, .error { background: #f8d7da; color: #a12834; }
+        .inactive { color: #999; }
+        #events {
+            margin-top: 16px;
+            display: none;
+        }
+        #events.show { display: block; }
+        #events h2 {
+            font-size: 14px;
+            margin: 0 0 8px;
+            color: #374151;
+        }
+        #events table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        #events th, #events td {
+            text-align: left;
+            padding: 6px 8px;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: top;
+        }
+        #events th {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #6b7280;
+        }
+        .event-row td:first-child {
+            border-left: 3px solid;
+        }
+        .event-info td:first-child { border-color: var(--accent); }
+        .event-warning td:first-child { border-color: #92660b; }
+        .event-error td:first-child { border-color: #a12834; }
+        .level-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .event-info .level-badge { background: #eef2ff; color: #3730a3; }
+        .event-warning .level-badge { background: #fff3cd; color: #92660b; }
+        .event-error .level-badge { background: #f8d7da; color: #a12834; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Payment Request</h1>
+        <p class="swagger-link"><a href="/swagger" target="_blank">Open API docs (Swagger)</a></p>
+
+        <form id="paymentForm">
+            <label for="merchantId">Merchant</label>
+            <select id="merchantId" required></select>
+
+            <div class="row">
+                <div>
+                    <label for="amount">Amount</label>
+                    <input id="amount" type="number" min="0.01" step="0.01" required />
+                </div>
+                <div>
+                    <label for="currency">Currency</label>
+                    <select id="currency">
+                        <option value="CLP">CLP</option>
+                        <option value="USD">USD</option>
+                        <option value="EUR">EUR</option>
+                    </select>
+                </div>
+            </div>
+
+            <fieldset>
+                <legend>Card details</legend>
+
+                <label for="cardNumber">Card Number</label>
+                <input id="cardNumber" maxlength="19" readonly required />
+
+                <div class="row">
+                    <div>
+                        <label for="expiry">Expiry (MM/YY)</label>
+                        <input id="expiry" maxlength="5" readonly required />
+                    </div>
+                    <div>
+                        <label for="cvv">CVV</label>
+                        <input id="cvv" maxlength="4" readonly required />
+                    </div>
+                </div>
+
+                <button type="button" id="randomizeCard" class="btn-secondary">🎲 Randomize card data</button>
+            </fieldset>
+
+            <button type="submit" class="btn-primary">Pay</button>
+        </form>
+
+        <div id="result"></div>
+        <div id="events">
+            <h2>Transaction events</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Type</th>
+                        <th>Level</th>
+                        <th>Message</th>
+                    </tr>
+                </thead>
+                <tbody id="eventsList"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const merchantSelect = document.getElementById('merchantId');
+        const resultDiv = document.getElementById('result');
+        const eventsDiv = document.getElementById('events');
+        const eventsList = document.getElementById('eventsList');
+        const form = document.getElementById('paymentForm');
+
+        async function loadMerchants() {
+            const response = await fetch('/merchants?pageSize=100');
+            const body = await response.json();
+            if (!body.isSuccess) return;
+
+            for (const merchant of body.content.data) {
+                const option = document.createElement('option');
+                option.value = merchant.id;
+                option.textContent = merchant.name + (merchant.isActive ? '' : ' (inactive)');
+                if (!merchant.isActive) {
+                    option.classList.add('inactive');
+                    option.disabled = true;
+                }
+                merchantSelect.appendChild(option);
+            }
+        }
+
+        function luhnCheckDigit(digits) {
+            let sum = 0;
+            for (let i = 0; i < digits.length; i++) {
+                let digit = digits[digits.length - 1 - i];
+                if (i % 2 === 0) {
+                    digit *= 2;
+                    if (digit > 9) digit -= 9;
+                }
+                sum += digit;
+            }
+            return (10 - (sum % 10)) % 10;
+        }
+
+        function randomizeCard() {
+            let digits = [4];
+            for (let i = 0; i < 14; i++) digits.push(Math.floor(Math.random() * 10));
+            digits.push(luhnCheckDigit(digits));
+            const cardNumber = digits.join('').replace(/(.{4})/g, '$1 ').trim();
+
+            const now = new Date();
+            const month = 1 + Math.floor(Math.random() * 12);
+            const year = (now.getFullYear() + 1 + Math.floor(Math.random() * 4)) % 100;
+            const expiry = String(month).padStart(2, '0') + '/' + String(year).padStart(2, '0');
+
+            const cvv = String(Math.floor(100 + Math.random() * 900));
+
+            document.getElementById('cardNumber').value = cardNumber;
+            document.getElementById('expiry').value = expiry;
+            document.getElementById('cvv').value = cvv;
+        }
+
+        document.getElementById('randomizeCard').addEventListener('click', randomizeCard);
+
+        function showStatus(status, text) {
+            resultDiv.className = 'show ' + status.toLowerCase();
+            resultDiv.textContent = text;
+        }
+
+        async function showEvents(transactionId) {
+            const response = await fetch('/payments/' + transactionId + '/events');
+            if (!response.ok) return;
+
+            const body = await response.json();
+            if (!body.isSuccess) return;
+
+            eventsList.innerHTML = '';
+            for (const evt of body.content) {
+                const row = document.createElement('tr');
+                row.className = 'event-row event-' + evt.level.toLowerCase();
+
+                const time = new Date(evt.createdAt).toLocaleTimeString();
+                const timeCell = document.createElement('td');
+                timeCell.textContent = time;
+
+                const typeCell = document.createElement('td');
+                typeCell.textContent = evt.eventType;
+
+                const levelCell = document.createElement('td');
+                const badge = document.createElement('span');
+                badge.className = 'level-badge';
+                badge.textContent = evt.level;
+                levelCell.appendChild(badge);
+
+                const messageCell = document.createElement('td');
+                messageCell.textContent = evt.message;
+
+                row.append(timeCell, typeCell, levelCell, messageCell);
+                eventsList.appendChild(row);
+            }
+            eventsDiv.classList.add('show');
+        }
+
+        async function pollPayment(transactionId) {
+            const terminalStatuses = ['Approved', 'Declined', 'Failed'];
+            while (true) {
+                const response = await fetch('/payments/' + transactionId);
+                const body = await response.json();
+                if (!body.isSuccess) {
+                    showStatus('error', 'Error fetching payment status.');
+                    return;
+                }
+
+                const payment = body.content;
+                showStatus(payment.status, 'Status: ' + payment.status);
+
+                if (terminalStatuses.includes(payment.status)) {
+                    await showEvents(transactionId);
+                    return;
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+        }
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            showStatus('pending', 'Sending payment request...');
+            eventsDiv.classList.remove('show');
+            eventsList.innerHTML = '';
+
+            const payload = {
+                idempotencyKey: crypto.randomUUID(),
+                merchantId: merchantSelect.value,
+                amount: parseFloat(document.getElementById('amount').value),
+                currency: document.getElementById('currency').value,
+                card: {
+                    numero: document.getElementById('cardNumber').value,
+                    vencimiento: document.getElementById('expiry').value,
+                    cvv: document.getElementById('cvv').value
+                }
+            };
+
+            const response = await fetch('/payments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const body = await response.json();
+
+            if (!response.ok) {
+                const message = body.metadata && body.metadata.length
+                    ? body.metadata.map(m => m.value).join(', ')
+                    : (body.error ? body.error.description : 'Request failed.');
+                showStatus('error', message);
+                return;
+            }
+
+            await pollPayment(body.transactionId);
+        });
+
+        loadMerchants();
+        randomizeCard();
+    </script>
+</body>
+</html>
