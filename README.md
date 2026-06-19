@@ -69,3 +69,7 @@ Lo que hace el formulario:
 Los secretos (JWT, clave de cifrado de tarjetas, etc.) están definidos directamente en los `appsettings.json` del repositorio. Esto se hace únicamente porque es una **prueba técnica** y facilita correr el proyecto sin pasos adicionales.
 
 En un repositorio real estos valores **no deberían** estar en el código: los `appsettings` deberían ir vacíos (o con placeholders) y los secretos deberían manejarse con un *secret manager* (por ejemplo, User Secrets en desarrollo, o un Key Vault/Secrets Manager en los demás ambientes).
+
+## Uso de IA
+
+Las validaciones de tarjeta, el HTML del formulario web, la mayoría de los logs y el mock de la API que simula al adquirente según la ISO 8583 fueron generados usando Claude.
